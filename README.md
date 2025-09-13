@@ -100,14 +100,14 @@ Query parameters:
 - `filters`: (optional) JSON object containing 
 ```json
     {
-        title: "(optional) Search title",
-        page: "(optional): Page number for pagination",
-        limit: "(optional): Number of items per page",
-        status: "(optional): Filter by status (`open`, `in_progress`, `resolved`)",
-        severity: "(optional): Filter by severity (`minor`, `major`, `critical`)",
-        site: "(optional): Filter by site name",
-        sortOrder: "(optional): Sorting order (`asc`, `desc`)",
-        sortBy: "(optional): Issue field to sort by"
+        "title": "(optional String) Search title",
+        "page": "(optional Number): Page number for pagination",
+        "limit": "(optional Number): Number of items per page",
+        "status": "(optional `open` | `in_progress` | `resolved`): Filter by status",
+        "severity": "(optional `minor` | `major` | `critical`): Filter by severity ",
+        "site": "(optional String): Filter by site name",
+        "sortOrder": "(optional `asc` | `desc`): Sorting order ",
+        "sortBy": "(optional String): Issue field to sort by"
     }
 ```
 **Example:**
