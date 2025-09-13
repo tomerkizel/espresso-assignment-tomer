@@ -97,12 +97,19 @@ GET /api/issues
 ```
 
 Query parameters:
-- `page` (optional): Page number for pagination
-- `limit` (optional): Number of items per page
-- `status` (optional): Filter by status (`open`, `in_progress`, `resolved`)
-- `severity` (optional): Filter by severity (`minor`, `major`, `critical`)
-- `site` (optional): Filter by site name
-
+- `filters`: (optional) JSON object containing 
+```json
+    {
+        title: "(optional) Search title",
+        page: "(optional): Page number for pagination",
+        limit: "(optional): Number of items per page",
+        status: "(optional): Filter by status (`open`, `in_progress`, `resolved`)",
+        severity: "(optional): Filter by severity (`minor`, `major`, `critical`)",
+        site: "(optional): Filter by site name",
+        sortOrder: "(optional): Sorting order (`asc`, `desc`)",
+        sortBy: "(optional): Issue field to sort by"
+    }
+```
 **Example:**
 ```bash
 curl "http://localhost:3000/api/issues?page=1&limit=10&status=open"
