@@ -68,6 +68,9 @@ export const IssueCard = ({ issue, onDelete, onResolve, onEdit }) => {
                         <span className="flex items-center">
                             <strong>Created:</strong> <span className="ml-1">{formatDate(issue.createdAt)}</span>
                         </span>
+                        <span className="flex items-center">
+                            <strong>Updated:</strong> <span className="ml-1">{formatDate(issue.updatedAt)}</span>
+                        </span>
                     </div>
                 </div>
                 

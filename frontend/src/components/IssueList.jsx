@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Search, Filter, Upload, Plus, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Search, Filter, Upload, Plus, AlertCircle, AlertTriangle, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import issuesService from '../services/issueService';
 import { IssueForm } from './IssueForm';
 import { IssueCard } from './IssueCard';
@@ -17,6 +17,10 @@ export const IssueList = () => {
     const [otherFilters, setOtherFilters] = useState({
         status: '',
         severity: ''
+    });
+    const [sorting, setSorting] = useState({
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
     });
     const [pagination, setPagination] = useState({
         currentPage: 1,
@@ -55,6 +59,7 @@ export const IssueList = () => {
             title: debouncedTitleSearch,
             site: debouncedSiteSearch,
             ...otherFilters,
+            ...sorting,
             page: pagination.currentPage,
             limit: pagination.itemsPerPage
         };
@@ -74,6 +79,7 @@ export const IssueList = () => {
                     title: debouncedTitleSearch,
                     site: debouncedSiteSearch,
                     ...otherFilters,
+                    ...sorting,
                     page: 1,
                     limit: 1000 // Large limit to get all issues
                 };
@@ -129,18 +135,18 @@ export const IssueList = () => {
         };
     }, [siteSearchTerm]);
 
-    // Reset to page 1 when search terms or filters change
+    // Reset to page 1 when search terms, filters, or sorting change
     useEffect(() => {
         setPagination(prev => ({
             ...prev,
             currentPage: 1
         }));
-    }, [debouncedTitleSearch, debouncedSiteSearch, otherFilters]);
+    }, [debouncedTitleSearch, debouncedSiteSearch, otherFilters, sorting]);
 
-    // Fetch issues when debounced search terms, other filters, or pagination change
+    // Fetch issues when debounced search terms, other filters, sorting, or pagination change
     useEffect(() => {
         fetchIssues();
-    }, [debouncedTitleSearch, debouncedSiteSearch, otherFilters, pagination.currentPage, pagination.itemsPerPage]);
+    }, [debouncedTitleSearch, debouncedSiteSearch, otherFilters, sorting, pagination.currentPage, pagination.itemsPerPage]);
 
     const handleDelete = async (id) => {
         if (!confirm('Are you sure you want to delete this issue?')) {
@@ -235,6 +241,20 @@ export const IssueList = () => {
         fetchIssues();
     };
 
+    const handleSortFieldChange = (sortBy) => {
+        setSorting(prev => ({
+            ...prev,
+            sortBy
+        }));
+    };
+
+    const handleSortOrderChange = (sortOrder) => {
+        setSorting(prev => ({
+            ...prev,
+            sortOrder
+        }));
+    };
+
 
     return (
         <div className="space-y-6">
@@ -287,7 +307,7 @@ export const IssueList = () => {
 
         {/* Filters */}
         <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
@@ -335,6 +355,38 @@ export const IssueList = () => {
                 <option value="minor">Minor</option>
                 <option value="major">Major</option>
                 <option value="critical">Critical</option>
+                </select>
+            </div>
+            
+            <div className="relative">
+                <ArrowUpDown className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <select
+                value={sorting.sortBy}
+                onChange={(e) => handleSortFieldChange(e.target.value)}
+                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <option value="createdAt">Created Date</option>
+                <option value="updatedAt">Updated Date</option>
+                <option value="title">Title</option>
+                <option value="site">Site</option>
+                <option value="status">Status</option>
+                <option value="severity">Severity</option>
+                </select>
+            </div>
+            
+            <div className="relative">
+                {sorting.sortOrder === 'asc' ? (
+                    <ArrowUp className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                ) : (
+                    <ArrowDown className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                )}
+                <select
+                value={sorting.sortOrder}
+                onChange={(e) => handleSortOrderChange(e.target.value)}
+                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
                 </select>
             </div>
             </div>

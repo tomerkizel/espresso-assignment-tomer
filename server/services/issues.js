@@ -1,5 +1,5 @@
 import { getIssuesService } from '../db/index.js';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import _ from 'lodash';
 
 export default class IssuesService {
@@ -26,9 +26,25 @@ export default class IssuesService {
             site: _.isEmpty(site) ? undefined : { [Op.like]: `%${site}%` },
         }, _.isNil);
         
+        // Build custom order for severity and status fields
+        let orderClause;
+        if (sortBy === 'severity') {
+            const severityOrder = sortOrder.toLowerCase() === 'asc' 
+                ? "CASE WHEN severity = 'critical' THEN 1 WHEN severity = 'major' THEN 2 WHEN severity = 'minor' THEN 3 ELSE 4 END"
+                : "CASE WHEN severity = 'critical' THEN 1 WHEN severity = 'major' THEN 2 WHEN severity = 'minor' THEN 3 ELSE 4 END DESC";
+            orderClause = [[Sequelize.literal(severityOrder)]];
+        } else if (sortBy === 'status') {
+            const statusOrder = sortOrder.toLowerCase() === 'asc'
+                ? "CASE WHEN status = 'open' THEN 1 WHEN status = 'in_progress' THEN 2 WHEN status = 'resolved' THEN 3 ELSE 4 END"
+                : "CASE WHEN status = 'open' THEN 1 WHEN status = 'in_progress' THEN 2 WHEN status = 'resolved' THEN 3 ELSE 4 END DESC";
+            orderClause = [[Sequelize.literal(statusOrder)]];
+        } else {
+            orderClause = [[sortBy, sortOrder]];
+        }
+
         const { count, rows: issues} = await this.issuesService.get({
             where,
-            order: [[sortBy, sortOrder]],
+            order: orderClause,
             offset: (page - 1) * limit,
             limit,
         });
