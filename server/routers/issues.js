@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import IssuesController from '../controllers/issues.js';
+import { uploadCSV, handleUploadError } from '../middleware/upload.js';
 
 export default class IssuesRouter {
     constructor() {
@@ -13,6 +14,7 @@ export default class IssuesRouter {
         this.router.delete('/', this.deleteIssue);
         this.router.get('/count', this.getIssuesCounts);
         this.router.get('/', this.getIssues);
+        this.router.post('/bulk', uploadCSV, handleUploadError, this.bulkCreateIssues);
         app.use('/api/issues', this.router);
     }
 
@@ -56,6 +58,15 @@ export default class IssuesRouter {
         try {
             const deletedIssue = await this.issuesController.deleteIssueController(req.query.id);
             res.json(deletedIssue);
+        } catch (error) {
+            res.status(error.statusCode || 500).json({ message: error.message });
+        }
+    }
+
+    bulkCreateIssues = async (req, res) => {
+        try {
+            const bulkCreatedIssues = await this.issuesController.bulkCreateIssuesController(req.body, req.file);
+            res.json(bulkCreatedIssues);
         } catch (error) {
             res.status(error.statusCode || 500).json({ message: error.message });
         }

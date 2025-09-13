@@ -7,8 +7,8 @@ export const IssueForm = ({ issue, onSave, onCancel }) => {
         title: issue?.title || '',
         description: issue?.description || '',
         site: issue?.site || '',
-        severity: issue?.severity || 'minor',
-        status: issue?.status || 'open'
+        severity: issue?.severity || '',
+        status: issue?.status || ''
     });
     
     const [loading, setLoading] = useState(false);
@@ -146,6 +146,7 @@ export const IssueForm = ({ issue, onSave, onCancel }) => {
                                 onChange={(e) => setFormData(prev => ({ ...prev, severity: e.target.value }))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
+                                <option value="">Select Severity</option>
                                 <option value="minor">Minor</option>
                                 <option value="major">Major</option>
                                 <option value="critical">Critical</option>
@@ -162,6 +163,7 @@ export const IssueForm = ({ issue, onSave, onCancel }) => {
                                 onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
+                                <option value="">Select Status</option>
                                 <option value="open">Open</option>
                                 <option value="in_progress">In Progress</option>
                                 <option value="resolved">Resolved</option>

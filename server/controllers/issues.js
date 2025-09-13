@@ -1,5 +1,6 @@
 import IssuesService from '../services/issues.js';
 import { InvalidParameterError } from '../utils/errors.js';
+import { CSVParser } from '../utils/csvParser.js';
 import _ from 'lodash';
 
 export default class IssuesController {
@@ -51,5 +52,43 @@ export default class IssuesController {
         }
         const deletedIssue = await this.issuesService.deleteIssue(id);
         return deletedIssue;
+    }
+
+    bulkCreateIssuesController = async (data, file = null) => {
+        let issues;
+        
+        if (file) {
+            // Handle CSV file upload
+            if (!file.buffer) {
+                throw new InvalidParameterError('No file data received');
+            }
+            try {
+                issues = await CSVParser.parseIssuesCSV(file.buffer);
+            } catch (error) {
+                throw new InvalidParameterError(`CSV parsing error: ${error.message}`);
+            }
+        } else {
+            // Handle direct JSON data (existing functionality)
+            issues = data;
+        }
+
+        if (!Array.isArray(issues) || issues.length === 0) {
+            throw new InvalidParameterError('No valid issues provided');
+        }
+
+        // Validate each issue
+        for (let i = 0; i < issues.length; i++) {
+            const issue = issues[i];
+            if (!issue.title || !issue.description) {
+                throw new InvalidParameterError(`Issue at row ${i + 1}: Title and description are required`);
+            }
+        }
+
+        const bulkCreatedIssues = await this.issuesService.bulkCreateIssues(issues);
+        return {
+            message: `Successfully created ${bulkCreatedIssues.length} issues`,
+            created: bulkCreatedIssues.length,
+            issues: bulkCreatedIssues
+        };
     }
 }

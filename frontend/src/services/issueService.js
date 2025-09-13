@@ -89,6 +89,25 @@ class IssueService {
         const data = await result.json();
         return data;
     }
+
+    importFromCSV = async (csvText) => {
+        const url = new URL('/api/issues/bulk', window.location.origin);
+        const formData = new FormData();
+        const blob = new Blob([csvText], { type: 'text/csv' });
+        formData.append('file', blob, 'import.csv');
+        const result = await fetch(url.toString(), {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await result.json();
+
+        if (data.error) {
+            throw new Error(`Failed to import from CSV: ${data.error}`);
+        }
+
+        return data;
+    }
 }
 
 export default IssueService.instance;

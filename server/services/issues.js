@@ -80,4 +80,9 @@ export default class IssuesService {
         const deletedIssue = await this.issuesService.delete({ id });
         return deletedIssue;
     }
+
+    bulkCreateIssues = async (issues) => {
+        const bulkCreatedIssues = await this.issuesService.bulkCreate(issues);
+        return bulkCreatedIssues;
+    }
 }
