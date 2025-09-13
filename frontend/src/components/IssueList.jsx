@@ -20,7 +20,7 @@ export const IssueList = () => {
         try {
             setLoading(true);
             const filters = {
-                search: debouncedSearchTerm,
+                title: debouncedSearchTerm,
                 ...otherFilters
             };
             const data = await issuesService.getIssues(filters);
