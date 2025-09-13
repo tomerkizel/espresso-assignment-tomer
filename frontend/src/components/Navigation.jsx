@@ -1,5 +1,6 @@
 import React from 'react';
 import { List, BarChart3 } from 'lucide-react';
+import logo from '../assets/espresso-logo.png';
 
 export const Navigation = ({ currentView, onViewChange }) => {
   return (
@@ -8,7 +9,7 @@ export const Navigation = ({ currentView, onViewChange }) => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <img src={import.meta.env.BASE_URL + "src/assets/espresso-logo.png"} alt="Logo" className="h-12 w-12 mr-3" />
+              <img src={logo} alt="Logo" className="h-12 w-12 mr-3" />
               <h1 className="text-xl font-bold text-gray-900">Clinical Trial Issue Log</h1>
             </div>
             

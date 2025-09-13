@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Search, Filter, Edit, Trash2, CheckCircle2, Upload, Plus, AlertCircle, Clock } from 'lucide-react';
 import issuesService from '../services/issueService';
 import { IssueForm } from './IssueForm';
@@ -8,15 +8,21 @@ export const IssueList = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingIssue, setEditingIssue] = useState(null);
-    const [filters, setFilters] = useState({
-        search: '',
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [otherFilters, setOtherFilters] = useState({
         status: '',
         severity: ''
     });
+    const searchTimeoutRef = useRef(null);
 
     const fetchIssues = async () => {
         try {
             setLoading(true);
+            const filters = {
+                search: debouncedSearchTerm,
+                ...otherFilters
+            };
             const data = await issuesService.getIssues(filters);
             setIssues(data.issues);
         } catch (error) {
@@ -26,9 +32,30 @@ export const IssueList = () => {
         }
     };
 
+    // Debounce the search term - wait 2 seconds after user stops typing
+    useEffect(() => {
+        // Clear the existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        // Set a new timeout
+        searchTimeoutRef.current = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 2000);
+
+        // Cleanup function to clear timeout on component unmount or dependency change
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, [searchTerm]);
+
+    // Fetch issues when debounced search term or other filters change
     useEffect(() => {
         fetchIssues();
-    }, [filters]);
+    }, [debouncedSearchTerm, otherFilters]);
 
     const handleDelete = async (id) => {
         if (!confirm('Are you sure you want to delete this issue?')) {
@@ -148,8 +175,8 @@ export const IssueList = () => {
                 <input
                 type="text"
                 placeholder="Search issues..."
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
@@ -157,8 +184,8 @@ export const IssueList = () => {
             <div className="relative">
                 <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <select
-                value={filters.status}
-                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                value={otherFilters.status}
+                onChange={(e) => setOtherFilters(prev => ({ ...prev, status: e.target.value }))}
                 className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                 <option value="">All Statuses</option>
@@ -171,8 +198,8 @@ export const IssueList = () => {
             <div className="relative">
                 <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <select
-                value={filters.severity}
-                onChange={(e) => setFilters(prev => ({ ...prev, severity: e.target.value }))}
+                value={otherFilters.severity}
+                onChange={(e) => setOtherFilters(prev => ({ ...prev, severity: e.target.value }))}
                 className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                 <option value="">All Severities</option>
@@ -194,7 +221,7 @@ export const IssueList = () => {
             <div className="text-center py-8">
                 <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">{
-                    filters.search !== '' || filters.status !== '' || filters.severity !== '' ? 'No issues found. Check your filters.' : 'No issues found. Create your first issue to get started.'
+                    debouncedSearchTerm !== '' || otherFilters.status !== '' || otherFilters.severity !== '' ? 'No issues found. Check your filters.' : 'No issues found. Create your first issue to get started.'
                 }</p>
             </div>
             ) : (
