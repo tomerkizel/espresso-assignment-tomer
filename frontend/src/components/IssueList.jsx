@@ -307,7 +307,7 @@ export const IssueList = () => {
 
         {/* Filters */}
         <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
@@ -358,29 +358,12 @@ export const IssueList = () => {
                 </select>
             </div>
             
-            <div className="relative">
-                <ArrowUpDown className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <select
-                value={sorting.sortBy}
-                onChange={(e) => handleSortFieldChange(e.target.value)}
-                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                <option value="createdAt">Created Date</option>
-                <option value="updatedAt">Updated Date</option>
-                <option value="title">Title</option>
-                <option value="site">Site</option>
-                <option value="status">Status</option>
-                <option value="severity">Severity</option>
-                </select>
-            </div>
-            
-            <div className="relative">
-                <button
+            <div className="relative flex items-center justify-between w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button
                     type="button"
                     onClick={() =>
                         handleSortOrderChange(sorting.sortOrder === 'asc' ? 'desc' : 'asc')
                     }
-                    className="flex items-center justify-center w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                     aria-label={`Sort ${sorting.sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                 >
                     {sorting.sortOrder === 'asc' ? (
@@ -389,6 +372,17 @@ export const IssueList = () => {
                         <ArrowDown className="h-5 w-5 text-gray-500" />
                     )}
                 </button>
+                <select
+                    value={sorting.sortBy}
+                    onChange={(e) => handleSortFieldChange(e.target.value)}
+                >
+                    <option value="createdAt">Created Date</option>
+                    <option value="updatedAt">Updated Date</option>
+                    <option value="title">Title</option>
+                    <option value="site">Site</option>
+                    <option value="status">Status</option>
+                    <option value="severity">Severity</option>
+                </select>
             </div>
             </div>
         </div>
