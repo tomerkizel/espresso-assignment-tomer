@@ -10,8 +10,10 @@ export const IssueList = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingIssue, setEditingIssue] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [titleSearchTerm, setTitleSearchTerm] = useState('');
+    const [siteSearchTerm, setSiteSearchTerm] = useState('');
+    const [debouncedTitleSearch, setDebouncedTitleSearch] = useState('');
+    const [debouncedSiteSearch, setDebouncedSiteSearch] = useState('');
     const [otherFilters, setOtherFilters] = useState({
         status: '',
         severity: ''
@@ -26,7 +28,8 @@ export const IssueList = () => {
     const [duplicateGroups, setDuplicateGroups] = useState([]);
     const [currentDuplicateIndex, setCurrentDuplicateIndex] = useState(0);
     const [allIssues, setAllIssues] = useState([]); // Store all issues when showing duplicates
-    const searchTimeoutRef = useRef(null);
+    const titleSearchTimeoutRef = useRef(null);
+    const siteSearchTimeoutRef = useRef(null);
 
     // Function to find duplicate groups (issues with same title and site)
     const findDuplicateGroups = (issuesList) => {
@@ -48,12 +51,13 @@ export const IssueList = () => {
     const fetchIssues = async () => {
         try {
             setLoading(true);
-            const filters = {
-                title: debouncedSearchTerm,
-                ...otherFilters,
-                page: pagination.currentPage,
-                limit: pagination.itemsPerPage
-            };
+        const filters = {
+            title: debouncedTitleSearch,
+            site: debouncedSiteSearch,
+            ...otherFilters,
+            page: pagination.currentPage,
+            limit: pagination.itemsPerPage
+        };
             const data = await issuesService.getIssues(filters);
             setIssues(data.issues);
             setPagination(prev => ({
@@ -67,7 +71,8 @@ export const IssueList = () => {
             if (!showingDuplicates) {
                 // Fetch all issues to check for duplicates (without pagination)
                 const allFilters = {
-                    title: debouncedSearchTerm,
+                    title: debouncedTitleSearch,
+                    site: debouncedSiteSearch,
                     ...otherFilters,
                     page: 1,
                     limit: 1000 // Large limit to get all issues
@@ -84,38 +89,58 @@ export const IssueList = () => {
         }
     };
 
-    // Debounce the search term - wait 2 seconds after user stops typing
+    // Debounce the title search term - wait 2 seconds after user stops typing
     useEffect(() => {
         // Clear the existing timeout
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
+        if (titleSearchTimeoutRef.current) {
+            clearTimeout(titleSearchTimeoutRef.current);
         }
 
         // Set a new timeout
-        searchTimeoutRef.current = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
+        titleSearchTimeoutRef.current = setTimeout(() => {
+            setDebouncedTitleSearch(titleSearchTerm);
         }, 2000);
 
         // Cleanup function to clear timeout on component unmount or dependency change
         return () => {
-            if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
+            if (titleSearchTimeoutRef.current) {
+                clearTimeout(titleSearchTimeoutRef.current);
             }
         };
-    }, [searchTerm]);
+    }, [titleSearchTerm]);
 
-    // Reset to page 1 when search term or filters change
+    // Debounce the site search term - wait 2 seconds after user stops typing
+    useEffect(() => {
+        // Clear the existing timeout
+        if (siteSearchTimeoutRef.current) {
+            clearTimeout(siteSearchTimeoutRef.current);
+        }
+
+        // Set a new timeout
+        siteSearchTimeoutRef.current = setTimeout(() => {
+            setDebouncedSiteSearch(siteSearchTerm);
+        }, 2000);
+
+        // Cleanup function to clear timeout on component unmount or dependency change
+        return () => {
+            if (siteSearchTimeoutRef.current) {
+                clearTimeout(siteSearchTimeoutRef.current);
+            }
+        };
+    }, [siteSearchTerm]);
+
+    // Reset to page 1 when search terms or filters change
     useEffect(() => {
         setPagination(prev => ({
             ...prev,
             currentPage: 1
         }));
-    }, [debouncedSearchTerm, otherFilters]);
+    }, [debouncedTitleSearch, debouncedSiteSearch, otherFilters]);
 
-    // Fetch issues when debounced search term, other filters, or pagination change
+    // Fetch issues when debounced search terms, other filters, or pagination change
     useEffect(() => {
         fetchIssues();
-    }, [debouncedSearchTerm, otherFilters, pagination.currentPage, pagination.itemsPerPage]);
+    }, [debouncedTitleSearch, debouncedSiteSearch, otherFilters, pagination.currentPage, pagination.itemsPerPage]);
 
     const handleDelete = async (id) => {
         if (!confirm('Are you sure you want to delete this issue?')) {
@@ -262,14 +287,25 @@ export const IssueList = () => {
 
         {/* Filters */}
         <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
                 type="text"
-                placeholder="Search issues..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by title..."
+                value={titleSearchTerm}
+                onChange={(e) => setTitleSearchTerm(e.target.value)}
+                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+            
+            <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                type="text"
+                placeholder="Search by site..."
+                value={siteSearchTerm}
+                onChange={(e) => setSiteSearchTerm(e.target.value)}
                 className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
@@ -349,7 +385,7 @@ export const IssueList = () => {
             <div className="text-center py-8">
                 <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">{
-                    debouncedSearchTerm !== '' || otherFilters.status !== '' || otherFilters.severity !== '' ? 'No issues found. Check your filters.' : 'No issues found. Create your first issue to get started.'
+                    debouncedTitleSearch !== '' || debouncedSiteSearch !== '' || otherFilters.status !== '' || otherFilters.severity !== '' ? 'No issues found. Check your filters.' : 'No issues found. Create your first issue to get started.'
                 }</p>
             </div>
             ) : (
