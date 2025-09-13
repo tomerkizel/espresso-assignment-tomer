@@ -25,7 +25,8 @@ export const IssueCard = ({ issue, onDelete, onResolve, onEdit }) => {
             case 'resolved': return <CheckCircle2 className="h-4 w-4" />;
             case 'in_progress': return <Clock className="h-4 w-4" />;
             case 'open': return <AlertCircle className="h-4 w-4" />;
-            default: return <AlertCircle className="h-4 w-4" />;
+            // Show a gray icon for unknown/none status
+            default: return <AlertCircle className="h-4 w-4 text-gray-400" />;
         }
     };
 
@@ -47,9 +48,9 @@ export const IssueCard = ({ issue, onDelete, onResolve, onEdit }) => {
                         <h3 className="text-lg font-medium text-gray-900 truncate">
                             {issue.title}
                         </h3>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getSeverityColor(issue.severity)}`}>
-                            {issue.severity}
-                        </span>
+                        {issue.severity && issue.severity !== '' && <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getSeverityColor(issue.severity)}`}>
+                             {issue.severity}
+                        </span>}
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(issue?.status)}`}>
                             {getStatusIcon(issue?.status)}
                             <span className="ml-1 capitalize">

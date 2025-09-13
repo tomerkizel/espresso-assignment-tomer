@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Search, Filter, Upload, Plus, AlertCircle } from 'lucide-react';
+import { Search, Filter, Upload, Plus, AlertCircle, AlertTriangle } from 'lucide-react';
 import issuesService from '../services/issueService';
 import { IssueForm } from './IssueForm';
 import { IssueCard } from './IssueCard';
@@ -22,7 +22,28 @@ export const IssueList = () => {
         totalPages: 0,
         totalItems: 0
     });
+    const [showingDuplicates, setShowingDuplicates] = useState(false);
+    const [duplicateGroups, setDuplicateGroups] = useState([]);
+    const [currentDuplicateIndex, setCurrentDuplicateIndex] = useState(0);
+    const [allIssues, setAllIssues] = useState([]); // Store all issues when showing duplicates
     const searchTimeoutRef = useRef(null);
+
+    // Function to find duplicate groups (issues with same title and site)
+    const findDuplicateGroups = (issuesList) => {
+        const groups = {};
+        
+        // Group issues by title + site combination
+        issuesList.forEach(issue => {
+            const key = `${issue.title}|||${issue.site}`;
+            if (!groups[key]) {
+                groups[key] = [];
+            }
+            groups[key].push(issue);
+        });
+        
+        // Filter only groups with more than one issue (duplicates)
+        return Object.values(groups).filter(group => group.length > 1);
+    };
 
     const fetchIssues = async () => {
         try {
@@ -41,6 +62,21 @@ export const IssueList = () => {
                 totalItems: data.totalItems,
                 currentPage: data.currentPage
             }));
+
+            // Detect duplicates only if not currently showing duplicates
+            if (!showingDuplicates) {
+                // Fetch all issues to check for duplicates (without pagination)
+                const allFilters = {
+                    title: debouncedSearchTerm,
+                    ...otherFilters,
+                    page: 1,
+                    limit: 1000 // Large limit to get all issues
+                };
+                const allData = await issuesService.getIssues(allFilters);
+                const duplicates = findDuplicateGroups(allData.issues);
+                setDuplicateGroups(duplicates);
+                setCurrentDuplicateIndex(0);
+            }
         } catch (error) {
             console.error('Failed to fetch issues:', error);
         } finally {
@@ -88,6 +124,11 @@ export const IssueList = () => {
 
         try {
             await issuesService.removeIssue(id);
+            // If we're showing duplicates and this was the last issue in current set, go back to all issues
+            if (showingDuplicates && issues.length <= 1) {
+                setShowingDuplicates(false);
+                setCurrentDuplicateIndex(0);
+            }
             await fetchIssues();
         } catch (error) {
             console.error('Failed to delete issue:', error);
@@ -97,6 +138,11 @@ export const IssueList = () => {
     const handleResolve = async (issue) => {
         try {
           await issuesService.updateIssue(issue.id, { status: 'resolved' });
+          // If we're showing duplicates and this was the last issue in current set, go back to all issues  
+          if (showingDuplicates && issues.length <= 1) {
+                setShowingDuplicates(false);
+                setCurrentDuplicateIndex(0);
+            }
           await fetchIssues();
         } catch (error) {
           console.error('Failed to resolve issue:', error);
@@ -140,12 +186,55 @@ export const IssueList = () => {
         }
     };
 
+    const handleDuplicateAlertClick = () => {
+        if (duplicateGroups.length === 0) return;
+
+        if (showingDuplicates) {
+            // Already showing duplicates, go to next duplicate group
+            const nextIndex = (currentDuplicateIndex + 1) % duplicateGroups.length;
+            setCurrentDuplicateIndex(nextIndex);
+            setIssues(duplicateGroups[nextIndex]);
+        } else {
+            // Start showing duplicates
+            setAllIssues(issues); // Store current issues
+            setShowingDuplicates(true);
+            setCurrentDuplicateIndex(0);
+            setIssues(duplicateGroups[0]);
+        }
+    };
+
+    const handleBackToAllIssues = () => {
+        setShowingDuplicates(false);
+        setCurrentDuplicateIndex(0);
+        // Refetch issues to get current state
+        fetchIssues();
+    };
+
 
     return (
         <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h1 className="text-2xl font-bold text-gray-900">Issues Management</h1>
+            <div className="flex items-center space-x-3">
+                <h1 className="text-2xl font-bold text-gray-900">Issues Management</h1>
+                {/* Duplicate Alert */}
+                {duplicateGroups.length > 0 && (
+                    <div className="relative group">
+                        <button
+                            onClick={handleDuplicateAlertClick}
+                            className="flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 border border-yellow-300 hover:bg-yellow-200 transition-colors"
+                        >
+                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                        </button>
+                        
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Found likely duplicate tasks, click here to view
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </div>
+                )}
+            </div>
             <div className="flex items-center space-x-3">
             <input
                 type="file"
@@ -215,6 +304,41 @@ export const IssueList = () => {
             </div>
         </div>
 
+        {/* Duplicate View Status */}
+        {showingDuplicates && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                        <div>
+                            <h3 className="text-sm font-medium text-yellow-800">
+                                Viewing Duplicate Set {currentDuplicateIndex + 1} of {duplicateGroups.length}
+                            </h3>
+                            <p className="text-sm text-yellow-700">
+                                Showing {issues.length} duplicate issues with same title and site
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        {duplicateGroups.length > 1 && (
+                            <button
+                                onClick={handleDuplicateAlertClick}
+                                className="inline-flex items-center px-3 py-2 border border-yellow-300 text-sm font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
+                            >
+                                Next Set
+                            </button>
+                        )}
+                        <button
+                            onClick={handleBackToAllIssues}
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                        >
+                            Back to All Issues
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         {/* Issues List */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {loading ? (
@@ -244,14 +368,16 @@ export const IssueList = () => {
         </div>
 
         {/* Pagination */}
-        <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-        />
+        {!showingDuplicates && (
+            <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+            />
+        )}
 
         {/* Forms */}
         {(showForm || editingIssue) && (
