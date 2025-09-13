@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'backend/**'
+      - 'server/**'
 
 env:
   ECR_REPOSITORY: espresso/api
