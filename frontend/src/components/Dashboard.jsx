@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, AlertTriangle, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle2, Clock, AlertCircle, FileQuestion } from 'lucide-react';
 import issueService from '../services/issueService';
 export const Dashboard = () => {
   const [counts, setCounts] = useState({
-    status: { open: 0, in_progress: 0, resolved: 0 },
-    severity: { minor: 0, major: 0, critical: 0 }
+    status: { open: 0, in_progress: 0, resolved: 0, "": 0 },
+    severity: { minor: 0, major: 0, critical: 0, "": 0 }
   });
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +36,7 @@ export const Dashboard = () => {
     );
   }
 
-  const totalIssues = counts.status.open + counts.status.in_progress + counts.status.resolved;
+  const totalIssues = counts.status.open + counts.status.in_progress + counts.status.resolved + counts.status[""];
 
   return (
     <div className="space-y-8">
@@ -46,7 +46,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -94,12 +94,24 @@ export const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-gray-500">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <FileQuestion className="h-8 w-8 text-gray-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">Empty</p>
+              <p className="text-2xl font-bold text-gray-900">{counts.status[""]}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Status Breakdown */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Issues by Status</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center">
               <AlertCircle className="h-8 w-8 text-red-600 mr-3" />
@@ -129,13 +141,23 @@ export const Dashboard = () => {
               </div>
             </div>
           </div>
+          
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <FileQuestion className="h-8 w-8 text-gray-600 mr-3" />
+              <div>
+                <p className="text-2xl font-bold text-gray-800">{counts.status[""]}</p>
+                <p className="text-gray-600 font-medium">Empty</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Severity Breakdown */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Issues by Severity</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center">
               <Activity className="h-8 w-8 text-blue-600 mr-3" />
@@ -162,6 +184,16 @@ export const Dashboard = () => {
               <div>
                 <p className="text-2xl font-bold text-red-800">{counts.severity.critical}</p>
                 <p className="text-red-600 font-medium">Critical</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <FileQuestion className="h-8 w-8 text-gray-600 mr-3" />
+              <div>
+                <p className="text-2xl font-bold text-gray-800">{counts.severity[""]}</p>
+                <p className="text-gray-600 font-medium">Empty</p>
               </div>
             </div>
           </div>
