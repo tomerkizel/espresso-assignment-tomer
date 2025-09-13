@@ -17,6 +17,10 @@ app.get('/api/health', (req, res) => {
     res.status(200).send('OK');
 });
 
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
 const initRouters = () => {
     const issuesRouterInstance = new issuesRouter();
     issuesRouterInstance.userRouter(app);

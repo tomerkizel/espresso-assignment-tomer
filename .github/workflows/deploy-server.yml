@@ -8,7 +8,7 @@ on:
 
 env:
   ECR_REPOSITORY: espresso/api
-  ECS_SERVICE: espresso-api-service-75fbwzrw
+  ECS_SERVICE: espresso-api-service-fp6p003r
   ECS_CLUSTER: tomer-espresso
   ECS_TASK_DEFINITION: espresso-api
   CONTAINER_NAME: api
