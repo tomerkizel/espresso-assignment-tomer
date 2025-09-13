@@ -52,7 +52,10 @@ jobs:
         run: |
           aws ecs describe-task-definition \
             --task-definition ${{ env.ECS_TASK_DEFINITION }} \
-            --query taskDefinition > task-definition.json
+            --query taskDefinition > task-definition-raw.json
+          
+          # Remove unsupported fields that cause deployment issues
+          jq 'del(.registeredAt, .registeredBy, .taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy, .enableFaultInjection)' task-definition-raw.json > task-definition.json
 
       - name: Update task definition with new image
         id: task-def
