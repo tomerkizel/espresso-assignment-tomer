@@ -375,19 +375,20 @@ export const IssueList = () => {
             </div>
             
             <div className="relative">
-                {sorting.sortOrder === 'asc' ? (
-                    <ArrowUp className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                ) : (
-                    <ArrowDown className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                )}
-                <select
-                value={sorting.sortOrder}
-                onChange={(e) => handleSortOrderChange(e.target.value)}
-                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button
+                    type="button"
+                    onClick={() =>
+                        handleSortOrderChange(sorting.sortOrder === 'asc' ? 'desc' : 'asc')
+                    }
+                    className="flex items-center justify-center w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    aria-label={`Sort ${sorting.sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                 >
-                <option value="desc">Descending</option>
-                <option value="asc">Ascending</option>
-                </select>
+                    {sorting.sortOrder === 'asc' ? (
+                        <ArrowUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                        <ArrowDown className="h-5 w-5 text-gray-500" />
+                    )}
+                </button>
             </div>
             </div>
         </div>
