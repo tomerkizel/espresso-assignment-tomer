@@ -65,7 +65,7 @@ export const Pagination = ({
     };
 
     return (
-        <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+        <div className="bg-white px-4 py-3 border-gray-200 sm:px-6 rounded-lg shadow-md overflow-hidden">
             {/* Always visible info and controls section */}
             <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                 {/* Total results and items per page controls - always visible */}
