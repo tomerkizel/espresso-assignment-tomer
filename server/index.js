@@ -3,6 +3,10 @@ import dbConnection from "./db/service/dbConnection.js";
 import { initializeDatabase } from "./db/index.js";
 import issuesRouter from "./routers/issues.js";
 import cors from "cors";
+import { loadLocalConfig } from "./config/local.js";
+
+// Load local development configuration
+loadLocalConfig();
 
 const app = express();
 app.use(express.json());

@@ -10,9 +10,9 @@ class DbConnection {
     init = async () => {
         this.sequelize = new Sequelize({
             dialect: 'mysql',
-            host: 'espresso.clk0msok0nzn.eu-north-1.rds.amazonaws.com',
-            username: 'admin',
-            password: 'TLWXHvAVy5XRhpnDfUYD',
+            host: process.env.DB_HOST,
+            username: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
             database: 'espresso',
             // dialectOptions: {
             //     ssl: { rejectUnauthorized: false },
