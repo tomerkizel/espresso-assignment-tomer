@@ -22,16 +22,22 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-          
+
+      - name: Set working directory to frontend
+        run: echo "Working directory set to /frontend"
+        working-directory: ./frontend
+        shell: bash
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+        working-directory: ./frontend
 
       - name: Build
         run: npm run build
+        working-directory: ./frontend
 
       - name: Deploy
         run: |
           aws s3 sync --delete dist s3://${{ secrets.S3_BUCKET_NAME }}
           aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
-
-  
+        working-directory: ./frontend
