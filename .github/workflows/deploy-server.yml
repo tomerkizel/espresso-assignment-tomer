@@ -3,6 +3,8 @@ name: Deploy Express API to ECS
 on:
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
 
 env:
   ECR_REPOSITORY: espresso/api
